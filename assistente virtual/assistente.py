@@ -25,7 +25,7 @@ def iniciar_assistente(dispositivo):
 
     with open(CONFIGURACAO, "r", encoding="utf-8") as arquivo_configuracao:
         configuracoes = json.load(arquivo_configuracao)
-        acoes = configuracoes["ações"]
+        acoes = configuracoes["acoes"]
 
         arquivo_configuracao.close()
 
