@@ -8,19 +8,20 @@ import soundfile as sf
 import secrets
 import json
 import os
+import torch        # Importação em falta
+import torchaudio   # Importação em falta
 
-LINUAGEM = "portuguese"
+LINGUAGEM = "portuguese" # Corrigido de LINUAGEM para LINGUAGEM
 TEMPO_GRAVACAO = 5
 CAMINHO_AUDIO_FALAS = "temp"
 
 def iniciar_assistente(dispositivo):
-    iniciado, processador, modelo= iniciar_modelo(MODELO, dispositivo)
+    iniciado, processador, modelo = iniciar_modelo(MODELO, dispositivo)
     
-    palavras_de_parada = set(corpus.stopwords.words(LINUAGEM))
+    palavras_de_parada = set(corpus.stopwords.words(LINGUAGEM))
     
     return iniciado, processador, modelo, palavras_de_parada
     
-
 def capturar_fala():
     print("fale algo")
     fala = sd.rec(int(TEMPO_GRAVACAO * TAXA_AMOSTRAGEM), samplerate=TAXA_AMOSTRAGEM, channels=1)
@@ -29,6 +30,9 @@ def capturar_fala():
     return fala
 
 def gravar_fala(fala):
+    # Garante que a pasta temporária existe antes de gravar
+    os.makedirs(CAMINHO_AUDIO_FALAS, exist_ok=True)
+    
     gravado, arquivo = False, f"{CAMINHO_AUDIO_FALAS}/{secrets.token_hex(32)}.wav"
     
     try:
@@ -46,12 +50,14 @@ if __name__ == "__main__":
     iniciado, processador, modelo, palavras_de_parada = iniciar_assistente(dispositivo)
     if iniciado:
         fala = capturar_fala()
-        gravado,arquivo = gravar_fala(fala)
+        gravado, arquivo = gravar_fala(fala)
         if gravado:
             print("realizando gravacao da fala...")
             fala, _ = torchaudio.load(arquivo)
-            transcrever(dispositivo, fala.squeeze(), modelo, processador)
+            
+            # CORREÇÃO: Atribuir o retorno da função à variável transcricao
+            transcricao = transcrever(dispositivo, fala.squeeze(), modelo, processador)
                 
             print(f"fala: {transcricao}")
     else:
-             print("nap foi possivel iniciar a gravaçao") 
+        print("não foi possivel iniciar a gravação")

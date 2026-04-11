@@ -11,7 +11,8 @@ AUDIOS = [
 
 TAXA_AMOSTRAGEM = 16_000
 
-def iniciar(identificador_modelo, dispositivo = "gpu"):
+# CORREÇÃO: Mudar o valor por defeito de "gpu" para "cuda"
+def iniciar(identificador_modelo, dispositivo = "cuda"):
     iniciado, processador, modelo = False, None, None
 
     try:
@@ -26,26 +27,16 @@ def iniciar(identificador_modelo, dispositivo = "gpu"):
 
 def carregar_fala(audio_fala):
     audio, amostragem = torchaudio.load(audio_fala)
-    # verifica se audio tem mais de um canal
-    # ou seja, verifica se eh stereo
     if audio.shape[0] > 1:
-        # sendo stereo, transforma para mono
-        # ou seja, um canal somente, que basta
-        # para o reconhecimento de fala
         audio = torch.mean(audio, dim = 0, keepdim= True)
 
-    # cria um adaptador para degradar a qualidade do
-    # audio
     adaptador_amostragem = torchaudio.transforms.Resample(amostragem, TAXA_AMOSTRAGEM)
-    # degrada a qualidade do audio para 16.000
-    # ex.: os audios de teste tem um taxa de amostra
-    # de 44.100
     audio = adaptador_amostragem(audio)
 
     return audio.squeeze()
 
 def transcrever(dispositivo, fala, modelo, processador):
-   saida = processador(fala, return_tensors="pt",sampling_rate=TAXA_AMOSTRAGEM).input_values.to(dispositivo)
+   saida = processador(fala, return_tensors="pt", sampling_rate=TAXA_AMOSTRAGEM).input_values.to(dispositivo)
    saida = modelo(saida).logits
 
    predicao = torch.argmax(saida, dim=-1)
@@ -64,7 +55,4 @@ if __name__ == "__main__":
             transcricao = transcrever(dispositivo, fala, modelo, processador)
             print(f"transcrição do audio {audio}: {transcricao}")
 
-        for audio in AUDIOS:
-            fala = carregar_fala(audio)
-
-
+        # CORREÇÃO: O segundo ciclo 'for' que estava aqui foi removido porque era redundante e não fazia nada.

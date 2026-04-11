@@ -1,6 +1,7 @@
 transformers
+torchaudio==2.10.0
+torchcodec==0.10
 torch
-torchaudio
 sounddevice
 soundfile
 flask
