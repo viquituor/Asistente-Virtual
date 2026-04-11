@@ -52,10 +52,9 @@ if __name__ == "__main__":
         fala = capturar_fala()
         gravado, arquivo = gravar_fala(fala)
         if gravado:
-            print("realizando gravacao da fala...")
+            print("AGUARDE... realizando transcrição da fala...")
             fala, _ = torchaudio.load(arquivo)
             
-            # CORREÇÃO: Atribuir o retorno da função à variável transcricao
             transcricao = transcrever(dispositivo, fala.squeeze(), modelo, processador)
                 
             print(f"fala: {transcricao}")
