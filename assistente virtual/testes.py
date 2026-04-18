@@ -22,5 +22,9 @@ class TestesLampada(unittest.TestCase):
         self.assertIsNotNone(fala)
 
         comando = transcrever(self.dispositivo, fala, self.modelo, self.processador)
+        self.assertIsNotNone(comando)
 
+        valido, _, _, _, validar_comando(comando, self.acoes)
+
+        self.assertTrue(valido)
 unittest.main()
