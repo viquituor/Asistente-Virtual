@@ -8,29 +8,28 @@ import soundfile as sf
 import secrets
 import json
 import os
-import torch        # Importação em falta
-import torchaudio   # Importação em falta
 
 import lampada
 import tocador
 
-CONFIGURACAO = "Asistente-Virtual\assistente virtual\config.json"
-LINGUAGEM = "portuguese" # Corrigido de LINUAGEM para LINGUAGEM
-TEMPO_GRAVACAO = 8
+CONFIGURACAO = "config.json"
+
+LINGUAGEM = "portuguese"
+TEMPO_GRAVACAO = 5
 CAMINHO_AUDIO_FALAS = "temp"
 
 ATUADORES = [
-{
-    "nome":"lampada",
-    "iniciar": lampada.iniciar,
-    "atuar": lampada.atuar
-},{
-   "nome":"tocador",
-   "iniciar": tocador.iniciar,
-   "atuar" : tocador.atuar
-}
+    {
+        "nome": "lâmpada",
+        "iniciar": lampada.iniciar,
+        "atuar": lampada.atuar
+    },
+    {
+        "nome": "tocador",
+        "iniciar": tocador.iniciar,
+        "atuar": tocador.atuar
+    }
 ]
-
 
 def iniciar_assistente(dispositivo):
     iniciado, processador, modelo = iniciar_modelo(MODELO, dispositivo)
@@ -46,31 +45,33 @@ def iniciar_assistente(dispositivo):
     for atuador in ATUADORES:
         atuador["iniciar"]()
 
-    return iniciado, processador, modelo, palavras_de_parada
+    return iniciado, processador, modelo, palavras_de_parada, acoes
 
 def capturar_fala():
-    print("fale algo")
+    print("fale alguma coisa...")
+
     fala = sd.rec(int(TEMPO_GRAVACAO * TAXA_AMOSTRAGEM), samplerate=TAXA_AMOSTRAGEM, channels=1)
     sd.wait()
-    print("gravacao finalizada")
+
+    print("fala capturada!")
+
     return fala
 
 def gravar_fala(fala):
-    # Garante que a pasta temporária existe antes de gravar
-    os.makedirs(CAMINHO_AUDIO_FALAS, exist_ok=True)
-
-    gravado, arquivo = False, f"{CAMINHO_AUDIO_FALAS}/{secrets.token_hex(32)}.wav"
+    gravado, arquivo = False, f"{CAMINHO_AUDIO_FALAS}/{secrets.token_hex(32).lower()}.wav"
 
     try:
         sf.write(arquivo, fala, TAXA_AMOSTRAGEM)
+
         gravado = True
     except Exception as e:
-        print(f"erro gravando fala: {e}")
+        print(f"ocorreu um erro gravando o áudio: {e}")
 
     return gravado, arquivo
 
 def processar_transcricao(transcricao, palavras_de_parada):
     tokens = word_tokenize(transcricao)
+
     comando = []
     for token in tokens:
         if token not in palavras_de_parada:
@@ -82,26 +83,24 @@ def validar_comando(comando, acoes):
     valido, acao, objeto, local = False, None, None, None
 
     if len(comando) == 3:
-        acao = comando[0]
-        objeto = comando[1]
-        local = comando[2]
+        acao = comando[0] # ligar, desligar
+        objeto = comando[1] # lâmpada, ventilador
+        local = comando[2] # sala, cozinha, quarto
 
         for acao_configurada in acoes:
-            if acao == acao_configurada["nome"]:
+            if acao == acao_configurada["nome"]: # ligar
                 if objeto in acao_configurada["dispositivos"]:
                     valido = True
 
                     break
-    
+
     return valido, acao, objeto, local
 
-def executar_acao(acao, objeto, local):
-    print(f"executando acao: {acao} no objeto: {objeto} no local: {local}")
-    # Aqui você pode adicionar a lógica para controlar os dispositivos reais, como enviar comandos para um sistema de automação residencial, etc.
-
+def executar_comando(acao, objeto, local):
+    for atuador in ATUADORES:
+        atuador["atuar"](acao, objeto, local)
 
 if __name__ == "__main__":
-
     dispositivo = "cuda:0" if torch.cuda.is_available() else "cpu"
 
     iniciado, processador, modelo, palavras_de_parada, acoes = iniciar_assistente(dispositivo)
@@ -109,20 +108,19 @@ if __name__ == "__main__":
         fala = capturar_fala()
         gravado, arquivo = gravar_fala(fala)
         if gravado:
-            print("AGUARDE... realizando transcricao da fala...")
+            print("realizando transcrição...")
+
             fala, _ = torchaudio.load(arquivo)
-
             transcricao = transcrever(dispositivo, fala.squeeze(), modelo, processador)
-
             print(f"fala: {transcricao}")
 
             comando = processar_transcricao(transcricao, palavras_de_parada)
             print(f"comando: {comando}")
 
-            valido,acao,objeto, local = validar_comando(comando, acoes)
+            valido, acao, objeto, local = validar_comando(comando, acoes)
             if valido:
-                executar_acao(acao, objeto, local)
+                executar_comando(acao, objeto, local)
             else:
-                print("Comando Invalido")
+                print("comando inválido")
     else:
-        print("não foi possivel iniciar a gravação")
+        print("não possível iniciar o assistente")

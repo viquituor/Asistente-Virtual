@@ -1,5 +1,10 @@
 def iniciar():
-    print("tocador iniciado")
+    print("lâmpada iniciada")
 
-def atuar():
-    print("ligar lampada")
+def atuar(acao, objeto, local):
+    if acao in ["ligar", "acender"] and objeto == "lâmpada":
+        print(f"ligando a lâmpada no/na/em {local}")
+    elif acao in ["desligar", "apagar"] and objeto == "lâmpada":
+        print(f"desligando a lâmpada no/na/em {local}")
+    else:
+        print("comando não reconhecido pela lâmpada")
