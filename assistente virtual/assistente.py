@@ -12,7 +12,7 @@ import os
 import lampada
 import tocador
 
-CONFIGURACAO = "config.json"
+CONFIGURACAO = "Asistente-Virtual\assistente virtual\config.json"
 
 LINGUAGEM = "portuguese"
 TEMPO_GRAVACAO = 5
