@@ -1,5 +1,5 @@
 import pygame
-MUSICA = "Asistente-Virtual\assistente virtual\audios\la belle de jour.mp3"
+MUSICA = "Asistente-Virtual\\assistente virtual\\audios\\la belle de jour.mp3"
 
 def iniciar():
     pygame.init()
