@@ -8,7 +8,7 @@ import soundfile as sf
 import secrets
 import json
 import os
-
+        
 import lampada
 import tocador
 
