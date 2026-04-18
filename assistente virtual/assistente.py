@@ -11,11 +11,25 @@ import os
 import torch        # Importação em falta
 import torchaudio   # Importação em falta
 
-CONFIGURACAO = "assistente virtual\config.json"
+import lampada
+import tocador
+
+CONFIGURACAO = "Asistente-Virtual\assistente virtual\config.json"
 LINGUAGEM = "portuguese" # Corrigido de LINUAGEM para LINGUAGEM
 TEMPO_GRAVACAO = 8
 CAMINHO_AUDIO_FALAS = "temp"
 
+ATUADORES = [
+{
+    "nome":"lampada",
+    "iniciar": lampada.iniciar,
+    "atuar": lampada.atuar
+},{
+   "nome":"tocador",
+   "iniciar": tocador.iniciar,
+   "atuar" : tocador.atuar
+}
+]
 
 
 def iniciar_assistente(dispositivo):
@@ -28,6 +42,9 @@ def iniciar_assistente(dispositivo):
         acoes = configuracoes["acoes"]
 
         arquivo_configuracao.close()
+
+    for atuador in ATUADORES:
+        atuador["iniciar"]()
 
     return iniciado, processador, modelo, palavras_de_parada
 
